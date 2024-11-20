@@ -1134,7 +1134,7 @@ th {
             suggestionsBox.style.display = 'none';
             return;
         }
-    
+        else{
         try {
             const response = await fetch(`/suggest?query=${query}`);
             const suggestions = await response.json();
@@ -1170,6 +1170,7 @@ th {
             suggestionsBox.innerHTML = `<p>Error fetching suggestions. Please try again.</p>`;
             suggestionsBox.style.display = 'block';
         }
+    }
     }
     
     // Show all related courses when clicking "+ more courses"

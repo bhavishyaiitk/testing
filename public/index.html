@@ -1136,7 +1136,9 @@ th {
         }
     
         try {
-            const response = await fetch(`/suggest?query=${query}`);
+            const domain = window.location.origin; // Automatically gets your domain
+            const response = await fetch(`${domain}/suggest?query=${query}`);
+
             const suggestions = await response.json();
             let count = 0;
     

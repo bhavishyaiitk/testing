@@ -2,43 +2,34 @@ const express = require('express');
 const cors = require('cors');
 const xlsx = require('xlsx');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 app.use(cors());
 
-// Serve static files (index.html should be in the public directory)
-app.use(express.static(path.join(__dirname, 'public')));
+const workbook = xlsx.readFile(path.join(__dirname,'public', 'prof_grades.xlsx'));
+const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+const data = xlsx.utils.sheet_to_json(worksheet);
 
-// Define a function to read the Excel file from the public directory
-function readExcelData() {
-    const filePath = path.join(__dirname, 'public', 'prof_grades.xlsx');
-    if (!fs.existsSync(filePath)) {
-        throw new Error("Excel file not found.");
-    }
+// Configure CORS to explicitly allow your client origin
+const corsOptions = {
+    origin: 'https://testing-amber-beta.vercel.app/',  // Replace with your frontend’s Vercel domain or localhost for testing
+    methods: ['GET', 'POST'],                 // Allow specific methods
+    allowedHeaders: ['Content-Type'],         // Allow specific headers
+};
 
-    const workbook = xlsx.readFile(filePath);
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = xlsx.utils.sheet_to_json(worksheet);
+app.use(cors({
+    origin: 'https://testing-amber-beta.vercel.app'  // Replace with your actual front-end domain
+}));
 
-    // Ensure consistency in data fields by trimming whitespace and converting types
-    return data.map(row => ({
-        Year: String(row.Year).trim(),
-        Semester: String(row.Semester).trim(),
-        Course: String(row.Course).trim(),
-        Grade: row.Grade,
-        Count: row.Count
-    }));
-}
 
-// Read the data at the start of each request (or consider caching it)
-let formattedData;
-try {
-    formattedData = readExcelData();
-} catch (err) {
-    console.error("Error reading Excel data:", err);
-    formattedData = [];
-}
+// Ensure consistency in data fields by trimming whitespace and converting types
+const formattedData = data.map(row => ({
+    Year: String(row.Year).trim(),
+    Semester: String(row.Semester).trim(),
+    Course: String(row.Course).trim(),
+    Grade: row.Grade,
+    Count: row.Count
+}));
 
 // Serve the main HTML page
 app.get('/', (req, res) => {

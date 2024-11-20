@@ -6,32 +6,28 @@ const fs = require('fs');
 
 const app = express();
 app.use(cors());
+app.use(express.static(path.resolve(__dirname, 'public')));
 
-// Serve static files (index.html should be in the public directory)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Define a function to read the Excel file from the public directory
+// Function to read Excel data
 function readExcelData() {
-    const filePath = path.join(__dirname, 'public', 'prof_grades.xlsx');
+    const filePath = path.resolve(__dirname, 'public', 'prof_grades.xlsx');
     if (!fs.existsSync(filePath)) {
-        throw new Error("Excel file not found.");
+        throw new Error("Excel file not found at " + filePath);
     }
 
     const workbook = xlsx.readFile(filePath);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = xlsx.utils.sheet_to_json(worksheet);
 
-    // Ensure consistency in data fields by trimming whitespace and converting types
     return data.map(row => ({
-        Year: String(row.Year).trim(),
-        Semester: String(row.Semester).trim(),
-        Course: String(row.Course).trim(),
-        Grade: row.Grade,
-        Count: row.Count
+        Year: String(row.Year || '').trim(),
+        Semester: String(row.Semester || '').trim(),
+        Course: String(row.Course || '').trim(),
+        Grade: row.Grade || '',
+        Count: row.Count || 0
     }));
 }
 
-// Read the data at the start of each request (or consider caching it)
 let formattedData;
 try {
     formattedData = readExcelData();
@@ -40,12 +36,12 @@ try {
     formattedData = [];
 }
 
-// Serve the main HTML page
+// Serve main HTML
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
-// Search for a course by name
+// Search for courses
 app.get('/search', (req, res) => {
     const courseName = (req.query.course_name || '').trim();
     const results = formattedData.filter(row =>
@@ -60,18 +56,20 @@ app.get('/search', (req, res) => {
     })));
 });
 
-// Suggest course names based on a query
+// Suggest course names
 app.get('/suggest', (req, res) => {
     const searchText = (req.query.query || '').trim();
+    console.log(`Received /suggest request with query: ${searchText}`);
     const suggestions = [...new Set(
         formattedData
             .filter(row => row.Course.toLowerCase().includes(searchText.toLowerCase()))
             .map(row => row.Course)
     )];
+    console.log(`Suggestions found: ${suggestions}`);
     res.json(suggestions);
 });
 
-// Get available years for a specific course
+// Get years for a course
 app.get('/get_years', (req, res) => {
     const courseName = (req.query.course_name || '').trim();
     const years = [...new Set(
@@ -82,7 +80,7 @@ app.get('/get_years', (req, res) => {
     res.json(years);
 });
 
-// Get available semesters for a specific course and year
+// Get semesters for a course and year
 app.get('/get_semesters', (req, res) => {
     const courseName = (req.query.course_name || '').trim();
     const year = (req.query.year || '').trim();
@@ -94,7 +92,7 @@ app.get('/get_semesters', (req, res) => {
     res.json(semesters);
 });
 
-// Get grades and counts for a specific course, year, and semester
+// Get grades for a course, year, and semester
 app.get('/get_grades', (req, res) => {
     const courseName = (req.query.course_name || '').trim();
     const year = (req.query.year || '').trim();
@@ -116,10 +114,11 @@ app.get('/get_grades', (req, res) => {
     res.json(results);
 });
 
-const PORT = 3000; // You can choose a port
+// Port setup for Vercel
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
 
-// Export the app as a handler for Vercel
+// Export app for Vercel
 module.exports = app;

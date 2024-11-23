@@ -563,6 +563,18 @@ th {
 
 /* General styling for smaller screens (phones) */
 @media screen and (max-width: 1000px) {
+
+    html, body {
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    width: 100%; /* Ensure body doesn't exceed viewport width */
+    height: 100%; /* Ensure body covers the full height of the viewport */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    background-size: cover; /* Scale background image to cover the screen */
+}
+
+
     #suggestionsLeft, #suggestionsRight {
         width: 270px; /* Full width suggestion boxes */
         max-height: 150px; /* Limit height */
@@ -1706,11 +1718,18 @@ async function fetchSuggestions() {
             }
         });
     }
-      
+    
+    
+    
+    
+    
     
 </script>
+   
     
 </body>
+
+
 
 </html>
 

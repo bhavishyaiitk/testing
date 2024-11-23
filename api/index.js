@@ -4,25 +4,16 @@ const xlsx = require('xlsx');
 const path = require('path');
 
 const app = express();
-app.use(cors());
 
-const workbook = xlsx.readFile(path.join(__dirname,'public', 'prof_grades.xlsx'));
+// Enable CORS for all origins
+app.use(cors({ origin: '*' }));
+
+// Load and parse the Excel file
+const workbook = xlsx.readFile(path.resolve('public', 'prof_grades.xlsx'));
 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 const data = xlsx.utils.sheet_to_json(worksheet);
 
-// Configure CORS to explicitly allow your client origin
-const corsOptions = {
-    origin: '*',  // Replace with your frontend’s Vercel domain or localhost for testing
-    methods: ['GET', 'POST'],                 // Allow specific methods
-    allowedHeaders: ['Content-Type'],         // Allow specific headers
-};
-
-app.use(cors({
-    origin: '*'  // Replace with your actual front-end domain
-}));
-
-
-// Ensure consistency in data fields by trimming whitespace and converting types
+// Ensure consistency in data fields by trimming and formatting
 const formattedData = data.map(row => ({
     Year: String(row.Year).trim(),
     Semester: String(row.Semester).trim(),
@@ -32,9 +23,7 @@ const formattedData = data.map(row => ({
 }));
 
 // Serve the main HTML page
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.use(express.static(path.resolve('public')));
 
 // Search for a course by name
 app.get('/search', (req, res) => {
@@ -51,7 +40,7 @@ app.get('/search', (req, res) => {
     })));
 });
 
-// Suggest course names based on a query
+// Suggest course names
 app.get('/suggest', (req, res) => {
     const searchText = (req.query.query || '').trim();
     const suggestions = [...new Set(
@@ -107,10 +96,5 @@ app.get('/get_grades', (req, res) => {
     res.json(results);
 });
 
-const PORT = 3000; // You can choose a port
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
-
-// Export the app as a handler for Vercel
+// Export the app as the Vercel handler
 module.exports = app;

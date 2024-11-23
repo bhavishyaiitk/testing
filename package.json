@@ -4,7 +4,8 @@
   "main": "app.js",
  "scripts": {
     "start": "node index.js",
-    "server": "nodemon index.js"
+    "server": "nodemon index.js",
+    "build": "npm install && next build"
   },
   "keywords": [],
   "author": "",

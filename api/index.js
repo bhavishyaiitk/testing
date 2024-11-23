@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const xlsx = require('xlsx');
 const path = require('path');
@@ -12,13 +12,13 @@ const data = xlsx.utils.sheet_to_json(worksheet);
 
 // Configure CORS to explicitly allow your client origin
 const corsOptions = {
-    origin: 'https://testing-amber-beta.vercel.app/',  // Replace with your frontend’s Vercel domain or localhost for testing
+    origin: '*',  // Replace with your frontend’s Vercel domain or localhost for testing
     methods: ['GET', 'POST'],                 // Allow specific methods
     allowedHeaders: ['Content-Type'],         // Allow specific headers
 };
 
 app.use(cors({
-    origin: 'https://testing-amber-beta.vercel.app'  // Replace with your actual front-end domain
+    origin: '*'  // Replace with your actual front-end domain
 }));
 
 
@@ -109,7 +109,7 @@ app.get('/get_grades', (req, res) => {
 
 const PORT = 3000; // You can choose a port
 app.listen(PORT, () => {
-    console.log(Server running at http://localhost:${PORT});
+    console.log(`Server running at http://localhost:${PORT}`);
 });
 
 // Export the app as a handler for Vercel

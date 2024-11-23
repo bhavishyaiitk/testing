@@ -5,7 +5,7 @@
  "scripts": {
     "start": "node index.js",
     "server": "nodemon index.js",
-    "build": "npm install && next build"
+    "build": "npm install"
   },
   "keywords": [],
   "author": "",
